@@ -734,7 +734,31 @@ function legacyCopy(text){
   document.body.removeChild(ta);
 }
 
+/* When the page is served somewhere that blocks direct downloads (the Claude
+   artifact viewer), the host mediates the save instead. Resolved once at load;
+   stays null everywhere else, where the ordinary blob link works fine. */
+var hostSave = null;
+if(window.claude && typeof window.claude.use === "function"){
+  try {
+    window.claude.use("downloads").then(function(d){ hostSave = d; }, function(){});
+  } catch(e){ /* no host, carry on with the blob link */ }
+}
+
 function download(name, text, mime){
+  if(hostSave){
+    hostSave.save({ filename: name, data: text }).then(function(){
+      toast("Saved " + name);
+    }, function(err){
+      var code = err && err.code;
+      if(code === "declined") return;
+      if(code === "rejected_extension" || code === "extension_not_enabled"){
+        toast("This preview can't save " + name.split(".").pop().toUpperCase() + " files. Open the page from GitHub Pages or a local copy.");
+      } else {
+        toast("Download failed, try the Copy for Spond button instead");
+      }
+    });
+    return;
+  }
   var blob = new Blob([text], { type: mime });
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = name;

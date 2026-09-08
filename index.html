@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fixtures to Spond</title>
+<style>
+:root{
+  --ink:#101C26;
+  --ink-soft:#4A5A66;
+  --page:#E8EBED;
+  --card:#FFFFFF;
+  --line:#CFD6DA;
+  --accent:#B21E28;
+  --accent-soft:#F6E4E5;
+  --home:#12212E;
+  --warn:#8A5A00;
+  --warn-soft:#FBEFD3;
+  --font: Aptos, "Segoe UI", Calibri, system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--page); color:var(--ink);
+  font-family:var(--font); font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px; margin:0 auto; padding:32px 20px 96px}
+
+header.top{margin-bottom:28px}
+h1{
+  font-size:clamp(30px,5vw,46px); line-height:1.02; letter-spacing:-0.025em;
+  font-weight:800; margin:0 0 8px;
+}
+.sub{color:var(--ink-soft); max-width:62ch; margin:0}
+.club-tag{
+  display:inline-block; margin-top:14px; padding:4px 10px;
+  background:var(--ink); color:#fff; font-size:13px; font-weight:600;
+  border-radius:2px;
+}
+
+.card{
+  background:var(--card); border:1px solid var(--line);
+  border-radius:4px; padding:20px; margin-bottom:18px;
+}
+.card h2{
+  font-size:17px; font-weight:700; margin:0 0 4px; letter-spacing:-0.01em;
+}
+.card p.hint{margin:0 0 14px; color:var(--ink-soft); font-size:14px}
+
+textarea#paste{
+  width:100%; min-height:170px; padding:12px; border:1px solid var(--line);
+  border-radius:3px; font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  font-size:12.5px; line-height:1.45; resize:vertical; background:#FBFCFC; color:var(--ink);
+}
+textarea#paste:focus,input:focus,select:focus,button:focus-visible{
+  outline:2px solid var(--accent); outline-offset:1px;
+}
+
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-top:14px}
+.field{display:flex; flex-direction:column; gap:5px}
+.field label{font-size:12.5px; font-weight:600; color:var(--ink-soft)}
+.field input,.field select{
+  padding:8px 9px; border:1px solid var(--line); border-radius:3px;
+  font-family:var(--font); font-size:14px; background:#fff; color:var(--ink);
+}
+.field.grow{flex:1 1 240px}
+.field.grow input,.field.grow select{width:100%}
+.w-sm input,.w-sm select{width:110px}
+.w-xs input{width:78px}
+
+button{
+  font-family:var(--font); font-size:14px; font-weight:600;
+  padding:9px 16px; border-radius:3px; border:1px solid var(--ink);
+  background:var(--ink); color:#fff; cursor:pointer;
+}
+button.ghost{background:#fff; color:var(--ink)}
+button.primary{background:var(--accent); border-color:var(--accent)}
+button:disabled{opacity:.4; cursor:not-allowed}
+button:hover:not(:disabled){filter:brightness(1.12)}
+
+.count{font-size:13.5px; color:var(--ink-soft)}
+.flag{
+  display:inline-block; padding:2px 7px; border-radius:2px;
+  font-size:11.5px; font-weight:700; background:var(--warn-soft); color:var(--warn);
+}
+
+table{width:100%; border-collapse:collapse; font-size:13.5px}
+thead th{
+  text-align:left; font-size:12px; font-weight:700; color:var(--ink-soft);
+  padding:0 8px 8px; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+tbody td{padding:7px 8px; border-bottom:1px solid #EBEFF1; vertical-align:middle}
+tbody tr.off{opacity:.38}
+tbody tr:hover td{background:#FAFBFB}
+td.ha{padding-left:0}
+.chip{
+  display:inline-block; width:26px; text-align:center; padding:3px 0;
+  font-size:12px; font-weight:800; border-radius:2px; border:1.5px solid var(--home);
+}
+.chip.h{background:var(--home); color:#fff}
+.chip.a{background:#fff; color:var(--home)}
+td input{
+  width:100%; padding:5px 6px; border:1px solid transparent; border-radius:2px;
+  font-family:var(--font); font-size:13.5px; background:transparent; color:var(--ink);
+}
+td input:hover{border-color:var(--line); background:#fff}
+td input:focus{border-color:var(--accent); background:#fff}
+td input.tnum{font-variant-numeric:tabular-nums}
+.col-date{width:110px} .col-time{width:74px} .col-ha{width:44px}
+.tbl-scroll{overflow-x:auto; margin:0 -4px}
+.opp-full{display:block; font-size:11.5px; color:var(--ink-soft)}
+
+.exports{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.note{font-size:13px; color:var(--ink-soft); margin:14px 0 0; max-width:70ch}
+.cols{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px}
+.cols label{font-size:13px; display:flex; gap:6px; align-items:center; color:var(--ink-soft)}
+.hidden{display:none}
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+  background:var(--ink); color:#fff; padding:10px 18px; border-radius:3px;
+  font-size:14px; font-weight:600; opacity:0; pointer-events:none;
+}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:no-preference){.toast{transition:opacity .18s}}
+.errbox{
+  background:var(--accent-soft); border:1px solid #E4B9BC; color:#7A1017;
+  padding:12px 14px; border-radius:3px; font-size:14px; margin-top:14px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Fixtures to Spond</h1>
+  <p class="sub">Paste a season fixture list copied from FA Full-Time. Get a block you can paste straight into Spond's season planner to create availability requests, plus a calendar file.</p>
+  <span class="club-tag" id="clubTag">No fixtures loaded</span>
+</header>
+
+<section class="card">
+  <h2>1. Paste the fixture list</h2>
+  <p class="hint">Select the fixture rows on Full-Time, copy, and paste here. Headers and blank lines are ignored.</p>
+  <textarea id="paste" spellcheck="false" placeholder="L&#9;13/09/26 00:00&#9;Falmouth United Youth U13 Girls&#9;&#9;VS&#9;&#9;St Agnes Youth AFC U13 St Agnes U13 Kest&#9;PENRYN COLLEGE 3G pitch&#9;U13 Girls Premiership"></textarea>
+  <div class="row">
+    <button id="btnParse" class="primary">Read fixtures</button>
+    <button id="btnClear" class="ghost">Clear</button>
+    <span class="count" id="parseCount"></span>
+  </div>
+  <div id="parseErr" class="errbox hidden"></div>
+</section>
+
+<section class="card hidden" id="setupCard">
+  <h2>2. Set it up</h2>
+  <p class="hint">Full-Time lists rarely carry kick-off times, so set your default here and correct any exceptions in the table.</p>
+
+  <div class="row">
+    <div class="field grow">
+      <label for="teamSel">Your team, as Full-Time writes it</label>
+      <select id="teamSel"></select>
+    </div>
+    <div class="field w-sm">
+      <label for="koTime">Kick-off</label>
+      <input type="time" id="koTime" value="10:30">
+    </div>
+    <div class="field w-xs">
+      <label for="meetMins">Meet (min before)</label>
+      <input type="number" id="meetMins" value="30" min="0" max="180" step="5">
+    </div>
+    <div class="field w-xs">
+      <label for="durMins">Length (min)</label>
+      <input type="number" id="durMins" value="90" min="15" max="300" step="5">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field grow">
+      <label for="titleTpl">Event title</label>
+      <input type="text" id="titleTpl" value="{opponent} ({ha})">
+    </div>
+    <div class="field w-sm">
+      <label for="nameStyle">Opponent name</label>
+      <select id="nameStyle">
+        <option value="short" selected>Short</option>
+        <option value="full">As Full-Time writes it</option>
+      </select>
+    </div>
+    <div class="field w-sm">
+      <label for="haStyle">Home or away shown as</label>
+      <select id="haStyle">
+        <option value="short" selected>H / A</option>
+        <option value="long">Home / Away</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field grow">
+      <label for="descTpl">Description</label>
+      <input type="text" id="descTpl" value="{comp}. {home} v {away}. {venue}.">
+    </div>
+    <div class="field grow">
+      <label for="homeAddr">Your home venue address (optional, replaces the venue name on home games)</label>
+      <input type="text" id="homeAddr" placeholder="Mount Pleasant Eco Park, Chapel Porth Rd, St Agnes TR5 0XP">
+    </div>
+  </div>
+  <p class="note">Title and description accept <strong>{opponent} {home} {away} {ha} {venue} {comp} {team} {date}</strong>. A row with no time on Full-Time gets "kick-off to be confirmed" added to its description.</p>
+</section>
+
+<section class="card hidden" id="tableCard">
+  <h2>3. Check and correct</h2>
+  <p class="hint">Everything here is editable, and edits carry through to every export. Untick a row to leave it out.</p>
+  <div class="tbl-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px"></th>
+          <th class="col-ha">H/A</th>
+          <th class="col-date">Date</th>
+          <th class="col-time">Meet</th>
+          <th class="col-time">Kick-off</th>
+          <th>Title</th>
+          <th>Location</th>
+          <th style="width:70px"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="note" id="tblNote"></p>
+</section>
+
+<section class="card hidden" id="exportCard">
+  <h2>4. Send it to Spond</h2>
+  <p class="hint">In Spond on the web, open your group, choose Event, then Plan your season, then Availability Request. Click into the first cell of the grid and paste.</p>
+  <div class="exports">
+    <button id="btnCopy" class="primary">Copy for Spond</button>
+    <button id="btnIcs" class="ghost">Download calendar (.ics)</button>
+    <button id="btnCsv" class="ghost">Download spreadsheet (.csv)</button>
+  </div>
+  <div class="cols" id="colToggles"></div>
+  <p class="note">Column order above matches Spond's season planner grid. If your grid differs, untick or reorder using the arrows and copy again. Response deadlines and reminders are set in Spond after the events are created, using bulk edit.</p>
+</section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+//---PARSER-START---
+var GENERIC = ["girls","boys","under","u","reds","blues","whites","blacks","greens","yellows","a","b","c","1","2"];
+var CLUB_WORDS = ["youth","afc","fc","yfc","juniors","junior","community","football","club"];
+
+function pad(n){ return (n<10?"0":"") + n; }
+
+function parseDateToken(s){
+  var m = s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(!m) return null;
+  var d = parseInt(m[1],10), mo = parseInt(m[2],10), y = parseInt(m[3],10);
+  if(y < 100) y += 2000;
+  if(mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return { y:y, m:mo, d:d };
+}
+
+function parseTimeToken(s){
+  var m = s.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  if(!m) return null;
+  var h = parseInt(m[1],10), mi = parseInt(m[2],10);
+  if(h === 0 && mi === 0) return null; // Full-Time writes 00:00 when no time is set
+  return { h:h, mi:mi };
+}
+
+function isDateField(s){ return /\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(s); }
+function isVsField(s){ return /^(v|vs|v\.|versus)$/i.test(s.trim()); }
+
+function splitFields(line){
+  var parts;
+  if(line.indexOf("\t") > -1) parts = line.split("\t");
+  else parts = line.split(/ {2,}/);
+  var out = [];
+  for(var i=0;i<parts.length;i++){
+    var p = parts[i].replace(/\u00a0/g," ").trim();
+    if(p !== "") out.push(p);
+  }
+  return out;
+}
+
+function parseFullTime(text){
+  var lines = String(text).replace(/\r/g,"").split("\n");
+  var rows = [], skipped = 0;
+  for(var i=0;i<lines.length;i++){
+    var line = lines[i];
+    if(!line || !line.trim()) continue;
+    var f = splitFields(line);
+    if(f.length < 3){ if(isDateField(line)) skipped++; continue; }
+
+    var dIdx = -1;
+    for(var j=0;j<f.length;j++){ if(isDateField(f[j])){ dIdx = j; break; } }
+    if(dIdx === -1) continue;
+
+    var date = parseDateToken(f[dIdx]);
+    if(!date) { skipped++; continue; }
+    var time = parseTimeToken(f[dIdx]);
+
+    var home = null, away = null, venue = "", comp = "";
+    var vIdx = -1;
+    for(var k=dIdx+1;k<f.length;k++){ if(isVsField(f[k])){ vIdx = k; break; } }
+
+    if(vIdx > dIdx+1 && vIdx+1 < f.length){
+      home = f[vIdx-1];
+      away = f[vIdx+1];
+      venue = f[vIdx+2] || "";
+      comp  = f[vIdx+3] || "";
+    } else {
+      // no separate "v" column: look for "X v Y" inside one field, else take the next two fields
+      var inline = -1;
+      for(var q=dIdx+1;q<f.length;q++){
+        if(/\s+(v|vs|versus)\s+/i.test(f[q])){ inline = q; break; }
+      }
+      if(inline > -1){
+        var bits = f[inline].split(/\s+(?:v|vs|versus)\s+/i);
+        home = bits[0]; away = bits[1];
+        venue = f[inline+1] || ""; comp = f[inline+2] || "";
+      } else if(f.length >= dIdx+3){
+        home = f[dIdx+1]; away = f[dIdx+2];
+        venue = f[dIdx+3] || ""; comp = f[dIdx+4] || "";
+      }
+    }
+
+    if(!home || !away){ skipped++; continue; }
+    if(!/[a-z]/i.test(home) || !/[a-z]/i.test(away)){ skipped++; continue; }
+    if(/^\d+\s*-\s*\d+$/.test(venue)) venue = "";
+
+    rows.push({
+      date: date,
+      time: time,
+      timeMissing: !time,
+      home: home.trim(),
+      away: away.trim(),
+      venue: venue.trim(),
+      comp: comp.trim()
+    });
+  }
+  return { rows: rows, skipped: skipped };
+}
+
+function countTeams(rows){
+  var map = {};
+  for(var i=0;i<rows.length;i++){
+    map[rows[i].home] = (map[rows[i].home]||0) + 1;
+    map[rows[i].away] = (map[rows[i].away]||0) + 1;
+  }
+  var list = [];
+  for(var k in map){ if(map.hasOwnProperty(k)) list.push({name:k, n:map[k]}); }
+  list.sort(function(a,b){ return b.n - a.n || a.name.localeCompare(b.name); });
+  return list;
+}
+
+// "St Agnes Youth AFC U13 St Agnes U13 Kest" -> "St Agnes Kest"
+// "Falmouth United Youth U13 Girls"          -> "Falmouth United Girls"
+function shortenTeam(full){
+  if(!full) return "";
+  var words = full.split(/\s+/);
+  var ageIdx = -1;
+  for(var i=0;i<words.length;i++){
+    if(/^u\d{1,2}$/i.test(words[i]) || /^under$/i.test(words[i])){ ageIdx = i; break; }
+  }
+  if(ageIdx === -1) return full;
+
+  var clubPart = words.slice(0, ageIdx);
+  var teamPart = words.slice(ageIdx+1);
+  if(/^under$/i.test(words[ageIdx]) && teamPart.length && /^\d{1,2}$/.test(teamPart[0])){
+    teamPart = teamPart.slice(1);
+  }
+  // drop a repeated age token and any leading repeat of the club name
+  var cleaned = [];
+  for(var j=0;j<teamPart.length;j++){
+    if(/^u\d{1,2}$/i.test(teamPart[j])) continue;
+    if(/^under$/i.test(teamPart[j]) && /^\d{1,2}$/.test(teamPart[j+1]||"")){ j++; continue; }
+    cleaned.push(teamPart[j]);
+  }
+  var clubCore = [];
+  for(var c=0;c<clubPart.length;c++){
+    if(CLUB_WORDS.indexOf(clubPart[c].toLowerCase()) === -1) clubCore.push(clubPart[c]);
+  }
+  if(!cleaned.length) return clubCore.join(" ") || full;
+
+  // nothing distinguishing survived the strip, e.g. "St Agnes Under 13" under club
+  // "St Agnes": keep the age group, or the two teams become indistinguishable
+  if(cleaned.join(" ").toLowerCase() === clubCore.join(" ").toLowerCase()){
+    return teamPart.join(" ") || full;
+  }
+
+  // strip a leading repeat of the club name, e.g. "St Agnes Kest" under club "St Agnes"
+  if(clubCore.length && cleaned.length > clubCore.length){
+    var same = true;
+    for(var s=0;s<clubCore.length;s++){
+      if((cleaned[s]||"").toLowerCase() !== clubCore[s].toLowerCase()){ same = false; break; }
+    }
+    if(same) return clubCore.concat(cleaned.slice(clubCore.length)).join(" ");
+  }
+
+  // a bare nickname or a generic word carries no town, so put the club back in front
+  var shared = false;
+  for(var g=0; g<cleaned.length; g++){
+    for(var h=0; h<clubCore.length; h++){
+      if(cleaned[g].toLowerCase() === clubCore[h].toLowerCase()){ shared = true; break; }
+    }
+    if(shared) break;
+  }
+  if(!shared && clubCore.length) return clubCore.concat(cleaned).join(" ");
+
+  return cleaned.join(" ");
+}
+
+function tidyVenue(v){
+  if(!v) return "";
+  return v.split(/\s+/).map(function(w){
+    if(/\d/.test(w)) return w;
+    if(w.length <= 2 && w === w.toUpperCase() && /^[A-Z]+$/.test(w)) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }).join(" ");
+}
+
+function addMinutes(date, hh, mm, delta){
+  var t = new Date(date.y, date.m-1, date.d, hh, mm, 0);
+  t.setMinutes(t.getMinutes() + delta);
+  return t;
+}
+
+function buildRows(parsed, team, opts){
+  var out = [];
+  for(var i=0;i<parsed.length;i++){
+    var r = parsed[i];
+    var isHome = (r.home === team);
+    var isAway = (r.away === team);
+    if(!isHome && !isAway) continue;
+
+    var oppFull = isHome ? r.away : r.home;
+    var hh = r.time ? r.time.h : opts.koH;
+    var mm = r.time ? r.time.mi : opts.koM;
+    var ko   = addMinutes(r.date, hh, mm, 0);
+    var meet = addMinutes(r.date, hh, mm, -opts.meet);
+    var end  = addMinutes(r.date, hh, mm, opts.dur);
+
+    var venue = tidyVenue(r.venue);
+    if(isHome && opts.homeAddr) venue = opts.homeAddr;
+
+    out.push({
+      include: true,
+      isHome: isHome,
+      date: r.date,
+      ko: ko, meet: meet, end: end,
+      oppFull: oppFull,
+      oppShort: shortenTeam(oppFull),
+      homeFull: r.home, awayFull: r.away,
+      venue: venue,
+      comp: r.comp,
+      timeMissing: r.timeMissing,
+      title: ""
+    });
+  }
+  return out;
+}
+
+function fillTemplate(tpl, row, opts){
+  var opp = (opts.nameStyle === "full") ? row.oppFull : row.oppShort;
+  var ha  = row.isHome
+    ? (opts.haStyle === "long" ? "Home" : "H")
+    : (opts.haStyle === "long" ? "Away" : "A");
+  var dstr = pad(row.date.d) + "/" + pad(row.date.m) + "/" + row.date.y;
+  var map = {
+    "{opponent}": opp,
+    "{ha}": ha,
+    "{home}": (opts.nameStyle === "full") ? row.homeFull : shortenTeam(row.homeFull),
+    "{away}": (opts.nameStyle === "full") ? row.awayFull : shortenTeam(row.awayFull),
+    "{venue}": row.venue,
+    "{comp}": row.comp,
+    "{team}": (opts.nameStyle === "full") ? opts.team : shortenTeam(opts.team),
+    "{date}": dstr
+  };
+  var s = tpl;
+  for(var k in map){ if(map.hasOwnProperty(k)) s = s.split(k).join(map[k]); }
+  return s.replace(/\s{2,}/g," ").trim();
+}
+//---PARSER-END---
+
+/* ---------- app ---------- */
+var state = { parsed: [], teams: [], rows: [], team: "" };
+
+var COLUMNS = [
+  { key:"startDate", label:"Start date", on:true },
+  { key:"startTime", label:"Start time", on:true },
+  { key:"meetTime",  label:"Attendance time", on:true },
+  { key:"endDate",   label:"End date", on:true },
+  { key:"endTime",   label:"End time", on:true },
+  { key:"title",     label:"Title", on:true },
+  { key:"desc",      label:"Description", on:true },
+  { key:"location",  label:"Location", on:true }
+];
+
+function $(id){ return document.getElementById(id); }
+function fmtDate(d){ return pad(d.getDate()) + "/" + pad(d.getMonth()+1) + "/" + d.getFullYear(); }
+function fmtTime(d){ return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+
+function opts(){
+  var ko = $("koTime").value || "10:30";
+  var bits = ko.split(":");
+  return {
+    koH: parseInt(bits[0],10) || 0,
+    koM: parseInt(bits[1],10) || 0,
+    meet: parseInt($("meetMins").value,10) || 0,
+    dur: parseInt($("durMins").value,10) || 90,
+    nameStyle: $("nameStyle").value,
+    haStyle: $("haStyle").value,
+    homeAddr: $("homeAddr").value.trim(),
+    team: state.team
+  };
+}
+
+function toast(msg){
+  var t = $("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 1800);
+}
+
+$("btnParse").addEventListener("click", function(){
+  var res = parseFullTime($("paste").value);
+  var err = $("parseErr");
+  if(!res.rows.length){
+    err.textContent = "No fixtures found. Each line needs a date, two team names and ideally a venue. Copy the rows straight from the Full-Time fixture table rather than typing them.";
+    err.classList.remove("hidden");
+    $("parseCount").textContent = "";
+    return;
+  }
+  err.classList.add("hidden");
+  state.parsed = res.rows;
+  state.teams = countTeams(res.rows);
+
+  var sel = $("teamSel");
+  sel.innerHTML = "";
+  for(var i=0;i<state.teams.length;i++){
+    var o = document.createElement("option");
+    o.value = state.teams[i].name;
+    o.textContent = state.teams[i].name + "  (" + state.teams[i].n + " fixtures)";
+    sel.appendChild(o);
+  }
+  state.team = state.teams[0].name;
+  sel.value = state.team;
+
+  $("parseCount").textContent = res.rows.length + " fixtures read" + (res.skipped ? ", " + res.skipped + " lines skipped" : "");
+  $("setupCard").classList.remove("hidden");
+  $("tableCard").classList.remove("hidden");
+  $("exportCard").classList.remove("hidden");
+  rebuild();
+});
+
+$("btnClear").addEventListener("click", function(){
+  $("paste").value = ""; $("parseCount").textContent = "";
+  $("parseErr").classList.add("hidden");
+  $("setupCard").classList.add("hidden");
+  $("tableCard").classList.add("hidden");
+  $("exportCard").classList.add("hidden");
+  $("clubTag").textContent = "No fixtures loaded";
+  state = { parsed: [], teams: [], rows: [], team: "" };
+});
+
+["teamSel","koTime","meetMins","durMins","titleTpl","nameStyle","haStyle","descTpl","homeAddr"]
+.forEach(function(id){
+  $(id).addEventListener("change", function(){
+    if(id === "teamSel") state.team = $("teamSel").value;
+    rebuild();
+  });
+});
+
+function rebuild(){
+  var o = opts();
+  state.rows = buildRows(state.parsed, state.team, o);
+  for(var i=0;i<state.rows.length;i++){
+    state.rows[i].title = fillTemplate($("titleTpl").value, state.rows[i], o);
+  }
+  var short = shortenTeam(state.team);
+  var h = 0;
+  for(var j=0;j<state.rows.length;j++){ if(state.rows[j].isHome) h++; }
+  $("clubTag").textContent = short + " · " + state.rows.length + " fixtures · " + h + " home, " + (state.rows.length - h) + " away";
+  renderTable();
+}
+
+function renderTable(){
+  var tb = $("tbody");
+  tb.innerHTML = "";
+  var missing = 0;
+
+  state.rows.forEach(function(r, idx){
+    if(r.timeMissing) missing++;
+    var tr = document.createElement("tr");
+    if(!r.include) tr.className = "off";
+
+    var tdChk = document.createElement("td");
+    var chk = document.createElement("input");
+    chk.type = "checkbox"; chk.checked = r.include;
+    chk.setAttribute("aria-label","Include this fixture");
+    chk.addEventListener("change", function(){ r.include = chk.checked; renderTable(); });
+    tdChk.appendChild(chk); tr.appendChild(tdChk);
+
+    var tdHa = document.createElement("td");
+    tdHa.className = "ha";
+    var chip = document.createElement("span");
+    chip.className = "chip " + (r.isHome ? "h" : "a");
+    chip.textContent = r.isHome ? "H" : "A";
+    tdHa.appendChild(chip); tr.appendChild(tdHa);
+
+    tr.appendChild(cellInput(fmtDate(r.ko), "tnum", function(v){
+      var d = parseDateToken(v); if(!d) return;
+      [ "ko","meet","end" ].forEach(function(k){
+        r[k].setFullYear(d.y, d.m-1, d.d);
+      });
+      r.date = d;
+    }));
+
+    tr.appendChild(cellInput(fmtTime(r.meet), "tnum", function(v){
+      var t = v.match(/(\d{1,2}):(\d{2})/); if(!t) return;
+      r.meet.setHours(parseInt(t[1],10), parseInt(t[2],10));
+    }));
+
+    tr.appendChild(cellInput(fmtTime(r.ko), "tnum", function(v){
+      var t = v.match(/(\d{1,2}):(\d{2})/); if(!t) return;
+      var oldKo = new Date(r.ko);
+      r.ko.setHours(parseInt(t[1],10), parseInt(t[2],10));
+      var shift = (r.ko - oldKo) / 60000;
+      r.meet.setMinutes(r.meet.getMinutes() + shift);
+      r.end.setMinutes(r.end.getMinutes() + shift);
+      r.timeMissing = false;
+      renderTable();
+    }));
+
+    tr.appendChild(cellInput(r.title, "", function(v){ r.title = v; }));
+    tr.appendChild(cellInput(r.venue, "", function(v){ r.venue = v; }));
+
+    var tdFlag = document.createElement("td");
+    if(r.timeMissing){
+      var f = document.createElement("span");
+      f.className = "flag"; f.textContent = "no time";
+      f.title = "Full-Time gave no kick-off time for this fixture. The default has been applied.";
+      tdFlag.appendChild(f);
+    }
+    tr.appendChild(tdFlag);
+    tb.appendChild(tr);
+  });
+
+  var kept = state.rows.filter(function(r){ return r.include; }).length;
+  $("tblNote").textContent = kept + " of " + state.rows.length + " fixtures will be exported."
+    + (missing ? " " + missing + " have no kick-off time on Full-Time and are using your default." : "");
+}
+
+function cellInput(value, cls, onchange){
+  var td = document.createElement("td");
+  var inp = document.createElement("input");
+  inp.type = "text"; inp.value = value; if(cls) inp.className = cls;
+  inp.addEventListener("change", function(){ onchange(inp.value.trim()); });
+  td.appendChild(inp);
+  return td;
+}
+
+/* column toggles */
+function renderCols(){
+  var box = $("colToggles");
+  box.innerHTML = "";
+  COLUMNS.forEach(function(c, i){
+    var lab = document.createElement("label");
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = c.on;
+    cb.addEventListener("change", function(){ c.on = cb.checked; });
+    lab.appendChild(cb);
+    lab.appendChild(document.createTextNode(c.label));
+    var up = document.createElement("button");
+    up.className = "ghost"; up.textContent = "↑";
+    up.style.padding = "0 6px"; up.style.fontSize = "12px";
+    up.setAttribute("aria-label","Move " + c.label + " earlier");
+    up.addEventListener("click", function(){
+      if(i === 0) return;
+      var tmp = COLUMNS[i-1]; COLUMNS[i-1] = COLUMNS[i]; COLUMNS[i] = tmp;
+      renderCols();
+    });
+    lab.appendChild(up);
+    box.appendChild(lab);
+  });
+}
+renderCols();
+
+function descFor(r){
+  var s = fillTemplate($("descTpl").value, r, opts());
+  if(r.timeMissing) s += " Kick-off time to be confirmed.";
+  return s.replace(/\s{2,}/g," ").trim();
+}
+
+function exportRows(){
+  return state.rows.filter(function(r){ return r.include; }).map(function(r){
+    return {
+      startDate: fmtDate(r.ko),
+      startTime: fmtTime(r.ko),
+      meetTime:  fmtTime(r.meet),
+      endDate:   fmtDate(r.end),
+      endTime:   fmtTime(r.end),
+      title:     r.title,
+      desc:      descFor(r),
+      location:  r.venue
+    };
+  });
+}
+
+function activeCols(){ return COLUMNS.filter(function(c){ return c.on; }); }
+
+function buildTSV(){
+  var cols = activeCols();
+  return exportRows().map(function(r){
+    return cols.map(function(c){ return String(r[c.key] || "").replace(/\t/g," "); }).join("\t");
+  }).join("\n");
+}
+
+$("btnCopy").addEventListener("click", function(){
+  var tsv = buildTSV();
+  if(!tsv){ toast("Nothing to copy"); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(tsv).then(function(){ toast("Copied. Paste into Spond's first cell."); },
+      function(){ legacyCopy(tsv); });
+  } else legacyCopy(tsv);
+});
+
+function legacyCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); toast("Copied. Paste into Spond's first cell."); }
+  catch(e){ toast("Copy failed, use the .csv instead"); }
+  document.body.removeChild(ta);
+}
+
+function download(name, text, mime){
+  var blob = new Blob([text], { type: mime });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+}
+
+function csvCell(v){
+  v = String(v == null ? "" : v);
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+}
+
+$("btnCsv").addEventListener("click", function(){
+  var cols = activeCols();
+  var head = cols.map(function(c){ return csvCell(c.label); }).join(",");
+  var body = exportRows().map(function(r){
+    return cols.map(function(c){ return csvCell(r[c.key]); }).join(",");
+  }).join("\n");
+  download(fileStem() + ".csv", head + "\n" + body, "text/csv;charset=utf-8");
+});
+
+function icsStamp(d){
+  return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + "T" +
+         pad(d.getHours()) + pad(d.getMinutes()) + "00";
+}
+function icsEsc(s){ return String(s||"").replace(/[\\;,]/g, function(m){ return "\\" + m; }).replace(/\n/g,"\\n"); }
+function fold(line){
+  var out = [], s = line;
+  while(s.length > 73){ out.push(s.slice(0,73)); s = " " + s.slice(73); }
+  out.push(s);
+  return out.join("\r\n");
+}
+
+$("btnIcs").addEventListener("click", function(){
+  var rows = state.rows.filter(function(r){ return r.include; });
+  if(!rows.length){ toast("Nothing to export"); return; }
+  var now = new Date();
+  var L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Fixtures to Spond//EN","CALSCALE:GREGORIAN"];
+  rows.forEach(function(r, i){
+    L.push("BEGIN:VEVENT");
+    L.push("UID:" + icsStamp(r.ko) + "-" + i + "@fixtures-to-spond");
+    L.push("DTSTAMP:" + icsStamp(now));
+    L.push("DTSTART:" + icsStamp(r.ko));
+    L.push("DTEND:" + icsStamp(r.end));
+    L.push(fold("SUMMARY:" + icsEsc(r.title)));
+    if(r.venue) L.push(fold("LOCATION:" + icsEsc(r.venue)));
+    L.push(fold("DESCRIPTION:" + icsEsc(descFor(r) + " Meet " + fmtTime(r.meet) + ".")));
+    L.push("END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  download(fileStem() + ".ics", L.join("\r\n"), "text/calendar;charset=utf-8");
+});
+
+function fileStem(){
+  var s = shortenTeam(state.team) || "fixtures";
+  return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") + "-fixtures";
+}
+</script>
+</body>
+</html>
